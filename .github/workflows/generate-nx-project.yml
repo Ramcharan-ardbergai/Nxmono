@@ -71,18 +71,19 @@ jobs:
             exit 1
           fi
           case "$TECHNOLOGY" in
-            react-app)   plugin='@nx/react';   generator='application' ;;
-            next-app)    plugin='@nx/next';    generator='application' ;;
-            angular-app) plugin='@nx/angular'; generator='application' ;;
-            node-app)    plugin='@nx/node';    generator='application' ;;
-            nestjs-app)  plugin='@nx/nest';    generator='application' ;;
-            express-app) plugin='@nx/express'; generator='application' ;;
-            web-app)     plugin='@nx/web';     generator='application' ;;
-            ts-library)  plugin='@nx/js';      generator='library' ;;
+            react-app)   plugin='@nx/react';   generator='application'; e2e_option='--e2eTestRunner=none' ;;
+            next-app)    plugin='@nx/next';    generator='application'; e2e_option='--e2eTestRunner=none' ;;
+            angular-app) plugin='@nx/angular'; generator='application'; e2e_option='--e2eTestRunner=none' ;;
+            node-app)    plugin='@nx/node';    generator='application'; e2e_option='--e2eTestRunner=none' ;;
+            nestjs-app)  plugin='@nx/nest';    generator='application'; e2e_option='--e2eTestRunner=none' ;;
+            express-app) plugin='@nx/express'; generator='application'; e2e_option='--e2eTestRunner=none' ;;
+            web-app)     plugin='@nx/web';     generator='application'; e2e_option='--e2eTestRunner=none' ;;
+            ts-library)  plugin='@nx/js';      generator='library'; e2e_option='' ;;
             *) echo "::error::Unsupported technology"; exit 1 ;;
           esac
           echo "plugin=$plugin" >> "$GITHUB_OUTPUT"
           echo "generator=$generator" >> "$GITHUB_OUTPUT"
+          echo "e2e_option=$e2e_option" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v5
         with:
@@ -129,8 +130,15 @@ jobs:
         env:
           NX_PLUGIN: ${{ steps.generator.outputs.plugin }}
           NX_GENERATOR: ${{ steps.generator.outputs.generator }}
+          NX_E2E_OPTION: ${{ steps.generator.outputs.e2e_option }}
           PROJECT_NAME: ${{ inputs.project_name }}
-        run: npx nx generate "$NX_PLUGIN:$NX_GENERATOR" "$PROJECT_NAME" --no-interactive
+        shell: bash
+        run: |
+          generator_args=("$NX_PLUGIN:$NX_GENERATOR" "$PROJECT_NAME" --no-interactive)
+          if [[ -n "$NX_E2E_OPTION" ]]; then
+            generator_args+=("$NX_E2E_OPTION")
+          fi
+          npx nx generate "${generator_args[@]}"
 
       - name: Verify generated project
         env:
