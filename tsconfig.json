@@ -5,6 +5,9 @@
   "references": [
     {
       "path": "./demo-dragon"
+    },
+    {
+      "path": "./dragon-demo4"
     }
   ],
   "compilerOptions": {}
