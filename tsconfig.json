@@ -8,6 +8,9 @@
     },
     {
       "path": "./dragon-demo4"
+    },
+    {
+      "path": "./dragon56"
     }
   ],
   "compilerOptions": {}
