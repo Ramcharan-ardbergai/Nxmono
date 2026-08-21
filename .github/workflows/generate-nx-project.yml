@@ -73,7 +73,7 @@ jobs:
           case "$TECHNOLOGY" in
             react-app)   plugin='@nx/react';   generator='application'; e2e_option='--e2eTestRunner=none' ;;
             next-app)    plugin='@nx/next';    generator='application'; e2e_option='--e2eTestRunner=none' ;;
-            angular-app) plugin='@nx/angular'; generator='application'; e2e_option='--e2eTestRunner=none' ;;
+            angular-app) plugin='@nx/angular'; generator='application'; e2e_option='--e2eTestRunner=none'; ignore_unsupported_ts='true' ;;
             node-app)    plugin='@nx/node';    generator='application'; e2e_option='--e2eTestRunner=none' ;;
             nestjs-app)  plugin='@nx/nest';    generator='application'; e2e_option='--e2eTestRunner=none' ;;
             express-app) plugin='@nx/express'; generator='application'; e2e_option='--e2eTestRunner=none' ;;
@@ -84,6 +84,7 @@ jobs:
           echo "plugin=$plugin" >> "$GITHUB_OUTPUT"
           echo "generator=$generator" >> "$GITHUB_OUTPUT"
           echo "e2e_option=$e2e_option" >> "$GITHUB_OUTPUT"
+          echo "ignore_unsupported_ts=${ignore_unsupported_ts:-false}" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v5
         with:
@@ -131,6 +132,7 @@ jobs:
           NX_PLUGIN: ${{ steps.generator.outputs.plugin }}
           NX_GENERATOR: ${{ steps.generator.outputs.generator }}
           NX_E2E_OPTION: ${{ steps.generator.outputs.e2e_option }}
+          NX_IGNORE_UNSUPPORTED_TS_SETUP: ${{ steps.generator.outputs.ignore_unsupported_ts }}
           PROJECT_NAME: ${{ inputs.project_name }}
         shell: bash
         run: |
