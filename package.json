@@ -23,7 +23,8 @@
     "packages/*",
     "demo-dragon",
     "dragon-demo4",
-    "dragon56"
+    "dragon56",
+    "dragon57"
   ],
   "dependencies": {
     "next": "~16.1.6",
