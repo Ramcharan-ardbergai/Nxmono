@@ -11,6 +11,9 @@
     },
     {
       "path": "./dragon56"
+    },
+    {
+      "path": "./dragon57"
     }
   ],
   "compilerOptions": {}
