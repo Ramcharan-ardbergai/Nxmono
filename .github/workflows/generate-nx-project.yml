@@ -142,6 +142,19 @@ jobs:
           fi
           npx nx generate "${generator_args[@]}"
 
+      - name: Apply technology compatibility
+        env:
+          TECHNOLOGY: ${{ inputs.technology }}
+          PROJECT_NAME: ${{ inputs.project_name }}
+        shell: bash
+        run: |
+          project_root=$(npx nx show project "$PROJECT_NAME" --json | node -e "let s='';process.stdin.on('data',c=>s+=c).on('end',()=>process.stdout.write(JSON.parse(s).root))")
+          case "$TECHNOLOGY" in
+            angular-app)
+              PROJECT_TSCONFIG="$project_root/tsconfig.json" node -e "const fs=require('fs');const p=process.env.PROJECT_TSCONFIG;const j=JSON.parse(fs.readFileSync(p,'utf8'));j.compilerOptions={...(j.compilerOptions||{}),emitDeclarationOnly:false,lib:['ES2022','DOM','DOM.Iterable']};fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n')"
+              ;;
+          esac
+
       - name: Verify generated project
         env:
           PROJECT_NAME: ${{ inputs.project_name }}
