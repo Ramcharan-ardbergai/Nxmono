@@ -1,0 +1,167 @@
+name: Generate Nx project
+run-name: Nx generation ${{ inputs.request_id }} · ${{ inputs.project_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: Validated Nx project name
+        required: true
+        type: string
+      technology:
+        description: Approved technology identifier
+        required: true
+        type: string
+      source_branch:
+        description: Existing branch that receives generated files
+        required: true
+        type: string
+      target_branch:
+        description: Existing branch into which the pull request is opened
+        required: true
+        type: string
+      description:
+        description: Project description
+        required: false
+        type: string
+      request_id:
+        description: Generation request identifier
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: nx-generate-${{ github.repository }}-${{ inputs.source_branch }}
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Validate request and resolve generator
+        id: generator
+        env:
+          PROJECT_NAME: ${{ inputs.project_name }}
+          TECHNOLOGY: ${{ inputs.technology }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          REQUEST_ID: ${{ inputs.request_id }}
+        shell: bash
+        run: |
+          if [[ ! "$PROJECT_NAME" =~ ^[A-Za-z][A-Za-z0-9_-]{1,63}$ ]]; then
+            echo "::error::Invalid project name"
+            exit 1
+          fi
+          for branch in "$SOURCE_BRANCH" "$TARGET_BRANCH"; do
+            if [[ -z "$branch" || "$branch" == -* || "$branch" == *..* || "$branch" == *~* || "$branch" == *^* || "$branch" == *:* || "$branch" == *\\* ]]; then
+              echo "::error::Invalid branch"
+              exit 1
+            fi
+          done
+          if [[ "$SOURCE_BRANCH" == "$TARGET_BRANCH" ]]; then
+            echo "::error::Source and target branches must be different"
+            exit 1
+          fi
+          if [[ ! "$REQUEST_ID" =~ ^[A-Za-z0-9_-]{8,64}$ ]]; then
+            echo "::error::Invalid request identifier"
+            exit 1
+          fi
+          case "$TECHNOLOGY" in
+            react-app)   plugin='@nx/react';   generator='application' ;;
+            next-app)    plugin='@nx/next';    generator='application' ;;
+            angular-app) plugin='@nx/angular'; generator='application' ;;
+            node-app)    plugin='@nx/node';    generator='application' ;;
+            nestjs-app)  plugin='@nx/nest';    generator='application' ;;
+            express-app) plugin='@nx/express'; generator='application' ;;
+            web-app)     plugin='@nx/web';     generator='application' ;;
+            ts-library)  plugin='@nx/js';      generator='library' ;;
+            *) echo "::error::Unsupported technology"; exit 1 ;;
+          esac
+          echo "plugin=$plugin" >> "$GITHUB_OUTPUT"
+          echo "generator=$generator" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.source_branch }}
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install workspace dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Add plugin when missing
+        env:
+          NX_PLUGIN: ${{ steps.generator.outputs.plugin }}
+        shell: bash
+        run: |
+          if npm ls "$NX_PLUGIN" --depth=0 >/dev/null 2>&1; then
+            echo "$NX_PLUGIN is already installed"
+          else
+            nx_version=$(node -p "const p=require('./package.json'); String(p.devDependencies?.nx || p.dependencies?.nx || '').replace(/^[^0-9]*/, '')")
+            if [[ -z "$nx_version" ]]; then
+              echo "::error::Could not determine the workspace Nx version"
+              exit 1
+            fi
+            npx nx add "$NX_PLUGIN@$nx_version" --no-interactive || npm install --save-dev "$NX_PLUGIN@$nx_version" --no-audit --no-fund
+          fi
+
+      - name: Generate project
+        env:
+          NX_PLUGIN: ${{ steps.generator.outputs.plugin }}
+          NX_GENERATOR: ${{ steps.generator.outputs.generator }}
+          PROJECT_NAME: ${{ inputs.project_name }}
+        run: npx nx generate "$NX_PLUGIN:$NX_GENERATOR" "$PROJECT_NAME" --no-interactive
+
+      - name: Format generated files
+        run: npx nx format:write
+
+      - name: Verify generated project
+        env:
+          PROJECT_NAME: ${{ inputs.project_name }}
+        shell: bash
+        run: |
+          project_json=$(npx nx show project "$PROJECT_NAME" --json)
+          printf '%s\n' "$project_json"
+          for target in lint test build; do
+            if TARGET="$target" node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync(0,'utf8'));process.exit(p.targets?.[process.env.TARGET] ? 0 : 1)" <<< "$project_json"; then
+              npx nx run "$PROJECT_NAME:$target"
+            fi
+          done
+
+      - name: Commit generated files to source branch
+        env:
+          PROJECT_NAME: ${{ inputs.project_name }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          if git diff --cached --quiet; then
+            echo "::error::Nx generation produced no changes"
+            exit 1
+          fi
+          git commit -m "feat: generate Nx project ${PROJECT_NAME}"
+          git push origin "HEAD:refs/heads/$SOURCE_BRANCH"
+
+      - name: Open pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_BRANCH: ${{ inputs.source_branch }}
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+          PROJECT_NAME: ${{ inputs.project_name }}
+          PROJECT_DESCRIPTION: ${{ inputs.description }}
+          TECHNOLOGY: ${{ inputs.technology }}
+          REQUEST_ID: ${{ inputs.request_id }}
+        shell: bash
+        run: |
+          body=$(printf 'Generated project files.\n\nTechnology: `%s`\n\nGeneration request: `%s`\n\n%s' "$TECHNOLOGY" "$REQUEST_ID" "$PROJECT_DESCRIPTION")
+          gh pr create --base "$TARGET_BRANCH" --head "$SOURCE_BRANCH" --title "Create Nx project: $PROJECT_NAME" --body "$body"
