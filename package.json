@@ -22,7 +22,8 @@
   "workspaces": [
     "packages/*",
     "demo-dragon",
-    "dragon-demo4"
+    "dragon-demo4",
+    "dragon56"
   ],
   "dependencies": {
     "next": "~16.1.6",
