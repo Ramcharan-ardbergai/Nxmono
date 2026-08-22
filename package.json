@@ -25,7 +25,8 @@
     "dragon-demo4",
     "dragon56",
     "dragon57",
-    "demo45"
+    "demo45",
+    "demo50"
   ],
   "dependencies": {
     "next": "~16.1.6",

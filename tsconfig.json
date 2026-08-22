@@ -17,6 +17,9 @@
     },
     {
       "path": "./demo45"
+    },
+    {
+      "path": "./demo50"
     }
   ],
   "compilerOptions": {}
