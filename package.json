@@ -27,7 +27,8 @@
     "dragon57",
     "demo45",
     "demo50",
-    "project1"
+    "project1",
+    "project2"
   ],
   "dependencies": {
     "next": "~16.1.6",
