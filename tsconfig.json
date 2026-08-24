@@ -20,6 +20,9 @@
     },
     {
       "path": "./demo50"
+    },
+    {
+      "path": "./project1"
     }
   ],
   "compilerOptions": {}
