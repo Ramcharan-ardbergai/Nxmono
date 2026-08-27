@@ -26,6 +26,9 @@
     },
     {
       "path": "./project2"
+    },
+    {
+      "path": "./project96"
     }
   ],
   "compilerOptions": {}
