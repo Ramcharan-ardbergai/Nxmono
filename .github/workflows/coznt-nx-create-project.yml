@@ -39,18 +39,19 @@ jobs:
         shell: bash
         run: |
           case "$TEMPLATE" in
-            angular) GENERATOR='@nx/angular:application' ;;
-            react) GENERATOR='@nx/react:application' ;;
-            next) GENERATOR='@nx/next:application' ;;
-            node) GENERATOR='@nx/node:application' ;;
-            nest) GENERATOR='@nx/nest:application' ;;
-            express) GENERATOR='@nx/express:application' ;;
-            vue) GENERATOR='@nx/vue:application' ;;
-            nuxt) GENERATOR='@nx/nuxt:application' ;;
-            react-native) GENERATOR='@nx/react-native:application' ;;
-            expo) GENERATOR='@nx/expo:application' ;;
+            angular) PLUGIN='@nx/angular'; GENERATOR='@nx/angular:application' ;;
+            react) PLUGIN='@nx/react'; GENERATOR='@nx/react:application' ;;
+            next) PLUGIN='@nx/next'; GENERATOR='@nx/next:application' ;;
+            node) PLUGIN='@nx/node'; GENERATOR='@nx/node:application' ;;
+            nest) PLUGIN='@nx/nest'; GENERATOR='@nx/nest:application' ;;
+            express) PLUGIN='@nx/express'; GENERATOR='@nx/express:application' ;;
+            vue) PLUGIN='@nx/vue'; GENERATOR='@nx/vue:application' ;;
+            nuxt) PLUGIN='@nx/nuxt'; GENERATOR='@nx/nuxt:application' ;;
+            react-native) PLUGIN='@nx/react-native'; GENERATOR='@nx/react-native:application' ;;
+            expo) PLUGIN='@nx/expo'; GENERATOR='@nx/expo:application' ;;
             *) echo "Unsupported template: $TEMPLATE" >&2; exit 2 ;;
           esac
+          node -e "require.resolve('$PLUGIN/package.json')" >/dev/null 2>&1 || npx nx add "$PLUGIN" --no-interactive
           npx nx generate "$GENERATOR" "apps/$NAME" --no-interactive
       - name: Commit and push
         env:
