@@ -12,6 +12,10 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    env:
+      # Nx generators can invoke npm internally. Use npm's stable peer resolver
+      # to avoid Arborist crashing with "Cannot read properties of null (edgesOut)".
+      NPM_CONFIG_LEGACY_PEER_DEPS: "true"
     steps:
       - uses: actions/checkout@v5
         with: { fetch-depth: 0 }
