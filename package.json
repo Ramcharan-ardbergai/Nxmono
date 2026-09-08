@@ -52,7 +52,8 @@
     "demo50",
     "project1",
     "project2",
-    "project96"
+    "project96",
+    "apps/ppp1"
   ],
   "dependencies": {
     "@angular/common": "~22.0.4",
