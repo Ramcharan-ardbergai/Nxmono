@@ -1,4 +1,5 @@
 name: Coznt - create Nx project
+run-name: "Coznt Nx: ${{ inputs.project_name }} (${{ inputs.branch }})"
 on:
   workflow_dispatch:
     inputs:
@@ -47,19 +48,12 @@ jobs:
         run: |
           case "$TEMPLATE" in
             angular) PLUGIN='@nx/angular'; GENERATOR='@nx/angular:application' ;;
-            react) PLUGIN='@nx/react'; GENERATOR='@nx/react:application' ;;
             next) PLUGIN='@nx/next'; GENERATOR='@nx/next:application' ;;
             node) PLUGIN='@nx/node'; GENERATOR='@nx/node:application' ;;
-            nest) PLUGIN='@nx/nest'; GENERATOR='@nx/nest:application' ;;
-            express) PLUGIN='@nx/express'; GENERATOR='@nx/express:application' ;;
-            vue) PLUGIN='@nx/vue'; GENERATOR='@nx/vue:application' ;;
-            nuxt) PLUGIN='@nx/nuxt'; GENERATOR='@nx/nuxt:application' ;;
-            react-native) PLUGIN='@nx/react-native'; GENERATOR='@nx/react-native:application' ;;
-            expo) PLUGIN='@nx/expo'; GENERATOR='@nx/expo:application' ;;
             *) echo "Unsupported template: $TEMPLATE" >&2; exit 2 ;;
           esac
           node -e "require.resolve('$PLUGIN/package.json')" >/dev/null 2>&1 || npx nx add "$PLUGIN" --no-interactive
-          npx nx generate "$GENERATOR" "apps/$NAME" --no-interactive
+          npx nx generate "$GENERATOR" "apps/$NAME" --e2eTestRunner=none --no-interactive
       - name: Commit and push
         env:
           BRANCH: "${{ inputs.branch }}"
