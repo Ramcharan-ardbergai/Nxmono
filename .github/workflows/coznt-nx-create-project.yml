@@ -38,6 +38,7 @@ jobs:
         env:
           NAME: "${{ inputs.project_name }}"
           TEMPLATE: "${{ inputs.template }}"
+          NX_IGNORE_UNSUPPORTED_TS_SETUP: "true"
         shell: bash
         run: |
           case "$TEMPLATE" in
