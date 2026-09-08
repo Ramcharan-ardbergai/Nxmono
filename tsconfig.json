@@ -29,6 +29,12 @@
     },
     {
       "path": "./project96"
+    },
+    {
+      "path": "./apps/project22-e2e"
+    },
+    {
+      "path": "./apps/project22"
     }
   ],
   "compilerOptions": {}
