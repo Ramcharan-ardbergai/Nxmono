@@ -29,6 +29,9 @@
     },
     {
       "path": "./project96"
+    },
+    {
+      "path": "./apps/todopro-e2e"
     }
   ],
   "compilerOptions": {}

@@ -52,3 +52,8 @@ Thumbs.db
 # Next.js
 .next
 out
+.angular
+
+__screenshots__/
+
+test-output
