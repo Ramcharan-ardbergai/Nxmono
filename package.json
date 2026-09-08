@@ -5,8 +5,11 @@
   "scripts": {},
   "private": true,
   "devDependencies": {
+    "@nx/devkit": "23.1.1",
     "@nx/js": "23.1.1",
     "@nx/next": "^23.1.1",
+    "@nx/playwright": "23.1.1",
+    "@playwright/test": "^1.37.0",
     "@swc-node/register": "1.11.1",
     "@swc/cli": "~0.8.1",
     "@swc/core": "1.15.8",
@@ -29,7 +32,8 @@
     "demo50",
     "project1",
     "project2",
-    "project96"
+    "project96",
+    "apps/*"
   ],
   "dependencies": {
     "next": "~16.1.6",
