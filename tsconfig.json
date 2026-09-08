@@ -32,6 +32,9 @@
     },
     {
       "path": "./apps/todopro-e2e"
+    },
+    {
+      "path": "./apps/ppp1"
     }
   ],
   "compilerOptions": {}
